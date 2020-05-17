@@ -5,6 +5,37 @@
 -- * the hammer gets damaged a bit at each repair step
 ---------------------------------------------------------------------------------------
 
+
+-- TODO:
+-- Anvil UI changes
+--   - When no workpiece is loaded, punching with a damanged tool places it on top to fix [DONE]
+--   - Pick up anvil with Shift+Left Click
+--   - Open the UI to load the materials you commonly use to fix your tools
+--   - When the player looks at the anvil, a message with how loaded it is appears
+-- Metal Nuggets and Crystal fragments
+--   - Can be used as material to fix tools
+--   - 1 ingot = 9 nuggets [new]
+--   - 1 crystal + 1 pickaxe = 9 fragments (the pickaxe is not consumed)
+--     Examples: 1 Mese Crystal + 1 Mese Pickaxe = 9 Mese Crystal Fragments [override old recipe]
+--               1 Diamond + 1 Diamond Pickaxe = 9 Diamond Fragments [new]
+-- Work hardening
+--   - Any metal tool already fixed can be banged with the hammer to make it "work hardened"
+--   - Makes the tool sharper (20%?)
+--   - work_hardening_progress property, from 0 to 5 (complete)
+--   - Adds an small advantage for using metals instead of crystals
+-- Iron anvil
+--   - If elepower mod is present, the anvil is made of iron instead of steel
+-- Hammer time
+--   - Steel Hammer is based on the format of the gocm_carbon mod Mese Diamond hammer
+--   - If gocm_carbon is present, tools made of moreore:mythril, mese and diamond can only be
+--     repaired with a Mese Diamond hammer
+-- Anvil damage
+--   - Add 0.2% anvil damage to each successfull bang it receives
+--   - Becomes "Broken Anvil" when 100% damaged
+--     - Can't fix tools
+--     - Normal anvil can be used to craft 7 ingots, while broken gives only 6
+
+
 anvil = {
 	setting = {
 		item_displacement = 2/16,
