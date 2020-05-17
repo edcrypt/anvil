@@ -1,3 +1,5 @@
 default
+gocm_carbon
+elepower_dynamics?
 doc?
 intllib?

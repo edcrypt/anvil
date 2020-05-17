@@ -10,7 +10,7 @@
 -- Anvil UI changes
 --   - When no workpiece is loaded, punching with a damanged tool places it on top to fix [DONE]
 --   - Pick up anvil with Shift+Left Click
---   - Open the UI to load the materials you commonly use to fix your tools
+--   - Open the UI to load the anvil with the materials you commonly use to fix your tools
 --   - When the player looks at the anvil, a message with how loaded it is appears
 -- Metal Nuggets and Crystal fragments
 --   - Can be used as material to fix tools
@@ -24,16 +24,16 @@
 --   - work_hardening_progress property, from 0 to 5 (complete)
 --   - Adds an small advantage for using metals instead of crystals
 -- Iron anvil
---   - If elepower mod is present, the anvil is made of iron instead of steel
+--   - If elepower mod is present, the anvil is made of iron instead of steel [DONE]
 -- Hammer time
 --   - Steel Hammer is based on the format of the gocm_carbon mod Mese Diamond hammer
---   - If gocm_carbon is present, tools made of moreore:mythril, mese and diamond can only be
---     repaired with a Mese Diamond hammer
+--   - If gocm_carbon is present, tools made of moreore:mythril, mese, diamond and gocm_carbon:mese_diamond
+--     can only be repaired with a Mese Diamond hammer
 -- Anvil damage
 --   - Add 0.2% anvil damage to each successfull bang it receives
 --   - Becomes "Broken Anvil" when 100% damaged
 --     - Can't fix tools
---     - Normal anvil can be used to craft 7 ingots, while broken gives only 6
+--     - Normal anvil can be used to craft 7 ingots [DONE], while broken gives only 6
 
 
 anvil = {
@@ -41,10 +41,6 @@ anvil = {
 		item_displacement = 2/16,
 	}
 }
-
-minetest.register_alias("castle:anvil", "anvil:anvil")
-
-local hammer_repairable = minetest.settings:get_bool("anvil_hammer_is_repairable", true)
 
 anvil.make_unrepairable = function(item_name)
 	local item_def = minetest.registered_items[item_name]
@@ -62,9 +58,9 @@ local S = minetest.get_translator(minetest.get_current_modname())
 
 local hammer_def = {
 	description = S("Steel blacksmithing hammer"),
-	_doc_items_longdesc = S("A tool for repairing other tools at a blacksmith's anvil."),
-	_doc_items_usagehelp = S("Use this hammer to strike blows upon an anvil bearing a damaged tool and you can repair it. It can also be used for smashing stone, but it is not well suited to this task."),
-	image           = "anvil_tool_steelhammer.png",
+	_doc_items_longdesc = S("A tool for repairing other tools with a blacksmith's anvil."),
+	_doc_items_usagehelp = S("Use this hammer to strike an anvil bearing a damaged tool and you can repair it."),
+	wield_image     = "anvil_tool_steelhammer.png^[transformR270",
 	inventory_image = "anvil_tool_steelhammer.png",
 
 	tool_capabilities = {
@@ -78,11 +74,28 @@ local hammer_def = {
 	}
 }
 
-if not hammer_repairable then
-	hammer_def.groups = {["not_repaired_by_anvil"] = 1}
-end
-
 minetest.register_tool("anvil:hammer", hammer_def)
+
+-- Fix Mese Diamond hammer wielding
+
+local gocm_hammer_def = minetest.registered_items['gocm_carbon:epic_mese_diamond_hammer']
+minetest.register_tool(":gocm_carbon:epic_mese_diamond_hammer", {
+	description = S("Mese Diamond hammer"),
+	_doc_items_longdesc = S("A tool for repairing other tools with a blacksmith's anvil."),
+	_doc_items_usagehelp = S("Use this hammer to strike an anvil bearing a damaged tool and you can repair it."),
+	wield_image = gocm_hammer_def.inventory_image .. '^[transformR270',
+	inventory_image = gocm_hammer_def.inventory_image,
+
+	tool_capabilities = {
+		full_punch_interval = 0.8,
+		max_drop_level=1,
+		groupcaps={
+		-- about equal to a stone pick (it's not intended as a tool)
+			cracky={times={[2]=2.00, [3]=1.20}, uses=30, maxlevel=1},
+		},
+		damage_groups = {fleshy=6},
+	}
+})
 
 local tmp = {}
 
@@ -169,7 +182,7 @@ minetest.register_node("anvil:anvil", {
 	drawtype = "nodebox",
 	description = S("Anvil"),
 	_doc_items_longdesc = S("A tool for repairing other tools in conjunction with a blacksmith's hammer."),
-	_doc_items_usagehelp = S("Right-click on this anvil with a damaged tool to place the damaged tool upon it. You can then repair the damaged tool by striking it with a blacksmith's hammer. Repeated blows may be necessary to fully repair a badly worn tool. To retrieve the tool either punch or right-click the anvil with an empty hand."),
+	_doc_items_usagehelp = S("Click with a damaged tool to place it tool upon. You can then repair the tool by striking it with a blacksmith's hammer. Repeated blows may be necessary to fully repair a badly worn tool. To retrieve the tool, punch  anvil with an empty hand."),
 	tiles = {"default_stone.png"},
 	paramtype  = "light",
 	paramtype2 = "facedir",
@@ -414,20 +427,49 @@ minetest.register_lbm({
 ---------------------------------------------------------------------------------------
 -- crafting receipes
 ---------------------------------------------------------------------------------------
-minetest.register_craft({
-	output = "anvil:anvil",
-	recipe = {
-		{"default:steel_ingot","default:steel_ingot","default:steel_ingot"},
-		{'',                   "default:steel_ingot",''                   },
-		{"default:steel_ingot","default:steel_ingot","default:steel_ingot"}
-	}
-})
+minetest.register_on_mods_loaded(function()
+		if minetest.registered_items['elepower_dynamics:iron_ingot'] then
+			minetest.register_craft({
+					output = "anvil:anvil",
+					recipe = {
+						{"elepower_dynamics:iron_ingot","elepower_dynamics:iron_ingot","elepower_dynamics:iron_ingot"},
+						{'',                            "elepower_dynamics:iron_ingot",''                            },
+						{"elepower_dynamics:iron_ingot","elepower_dynamics:iron_ingot","elepower_dynamics:iron_ingot"}
+					}
+			})
+			minetest.register_craft({
+					type="shapeless",
+					output= "elepower_dynamics:iron_ingot 7",
+					recipe = {'anvil:anvil'}
+			})
+		else
+			minetest.register_craft({
+					output = "anvil:anvil",
+					recipe = {
+						{"default:steel_ingot","default:steel_ingot","default:steel_ingot"},
+						{'',                   "default:steel_ingot",''                   },
+						{"default:steel_ingot","default:steel_ingot","default:steel_ingot"}
+					}
+			})
+			minetest.register_craft({
+					type="shapeless",
+					output= "default:steel_ingot 7",
+					recipe = {'anvil:anvil'}
+			})
+		end
+end)
 
 minetest.register_craft({
 	output = "anvil:hammer",
 	recipe = {
-		{"default:steel_ingot","default:steel_ingot","default:steel_ingot"},
-		{"default:steel_ingot","default:steel_ingot","default:steel_ingot"},
-		{"group:stick","",""}
+		{"default:steel_ingot","default:steel_ingot",""},
+		{"default:steel_ingot","group:stick",        ""},
+		{"",                   "group:stick",        ""}
 	}
 })
+
+
+---------------------------------------------------------------------------------------
+-- aliases
+---------------------------------------------------------------------------------------
+minetest.register_alias("anvil:mese_diamond_hammer", "gocm_carbon:epic_mese_diamond_hammer")
