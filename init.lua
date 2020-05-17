@@ -159,6 +159,12 @@ else
 	metal_sounds = default.node_sound_stone_defaults()
 end
 
+local anvil_formspec =
+	"size[8,8]"..
+	"label[0.375,0.5;Materials:]"..
+	"list[current_name;materials;1,1.25;2,2;]"..
+	"list[current_player;main;0,4;8,4;]";
+
 minetest.register_node("anvil:anvil", {
 	drawtype = "nodebox",
 	description = S("Anvil"),
@@ -193,12 +199,13 @@ minetest.register_node("anvil:anvil", {
 		local meta = minetest.get_meta(pos)
 		local inv = meta:get_inventory()
 		inv:set_size("input", 1)
+		inv:set_size("materials", 4)
+		meta:set_string("formspec", anvil_formspec);
 	end,
 
 	after_place_node = function(pos, placer)
 		local meta = minetest.get_meta(pos)
-		meta:set_string("owner", placer:get_player_name() or "")
-		meta:set_string("infotext", S("@1's anvil", placer:get_player_name()))
+		meta:set_string("infotext", S("Anvil"));
 	end,
 
 	can_dig = function(pos,player)
@@ -213,15 +220,20 @@ minetest.register_node("anvil:anvil", {
 
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		local meta = minetest.get_meta(pos)
+		if listname=="materials" and meta:get_inventory():room_for_item("materials", stack) then
+			-- TODO allow nugets/shards only
+			return stack:get_count()
+		end
 		if listname~="input" then
 			return 0
 		end
 		if (listname=='input') then
 			if (stack:get_wear() == 0) then
+				-- TODO allow placing metal tools for work-hardening
 				minetest.chat_send_player( player:get_player_name(), S('This anvil is for damaged tools only.'))
 				return 0
 			end
-		
+
 			if (minetest.get_item_group(stack:get_name(), "not_repaired_by_anvil") ~= 0) then
 				local item_def = minetest.registered_items[stack:get_name()]
 				minetest.chat_send_player( player:get_player_name(), S('@1 cannot be repaired with an anvil.', item_def.description))
@@ -236,41 +248,10 @@ minetest.register_node("anvil:anvil", {
 	end,
 
 	allow_metadata_inventory_take = function(pos, listname, index, stack, player)
-		if listname~="input" then
-			return 0
+		if listname=="input" or listname=="materials" then
+			return stack:get_count()
 		end
-		return stack:get_count()
-	end,
-
-	on_rightclick = function(pos, node, clicker, itemstack)
-		if not clicker or not itemstack then
-			return
-		end
-		local meta = minetest.get_meta(pos)
-		local name = clicker:get_player_name()
-
-		if name ~= meta:get_string("owner") then return itemstack end
-		if itemstack:get_count() == 0 then
-		local inv = meta:get_inventory()
-			if not inv:is_empty("input") then
-				local return_stack = inv:get_stack("input", 1)
-				inv:set_stack("input", 1, nil)
-				local wield_index = clicker:get_wield_index()
-				clicker:get_inventory():set_stack("main", wield_index, return_stack)
-				remove_item(pos, node)
-				return return_stack
-			end
-		end
-		local this_def = minetest.registered_nodes[node.name]
-		if this_def.allow_metadata_inventory_put(pos, "input", 1, itemstack:peek_item(), clicker) > 0 then
-			local s = itemstack:take_item()
-			local meta = minetest.get_meta(pos)
-			local inv = meta:get_inventory()
-			inv:add_item("input", s)
-			update_item(pos,node)
-		end
-
-		return itemstack
+		return 0
 	end,
 
 	on_punch = function(pos, node, puncher)
@@ -281,18 +262,27 @@ minetest.register_node("anvil:anvil", {
 		local wielded = puncher:get_wielded_item()
 		local meta = minetest.get_meta(pos)
 		local inv  = meta:get_inventory()
-		if meta:get_string("owner") ~= puncher:get_player_name() then
-			return
-		end
 
-		if wielded:get_count() == 0 then
+		-- pick up the workpiece
+		if wielded:get_count() == 0 then  -- nothing on hand
 			if not inv:is_empty("input") then
 				local return_stack = inv:get_stack("input", 1)
 				inv:set_stack("input", 1, nil)
 				local wield_index = puncher:get_wield_index()
 				puncher:get_inventory():set_stack("main", wield_index, return_stack)
 				remove_item(pos, node)
+				return
 			end
+		end
+
+		-- place workpiece
+		local this_def = minetest.registered_nodes[node.name]
+		if this_def.allow_metadata_inventory_put(pos, "input", 1, wielded:peek_item(), puncher) > 0 then
+			local s = wielded:take_item()
+			local wield_index = puncher:get_wield_index()
+			puncher:get_inventory():set_stack("main", wield_index, nil)
+			inv:add_item("input", s)
+			update_item(pos,node)
 		end
 
 		-- only punching with the hammer is supposed to work
@@ -441,4 +431,3 @@ minetest.register_craft({
 		{"group:stick","",""}
 	}
 })
-
