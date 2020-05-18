@@ -33,7 +33,7 @@
 --   - Add 0.2% anvil damage to each successfull bang it receives
 --   - Becomes "Broken Anvil" when 100% damaged
 --     - Can't fix tools
---     - Normal anvil can be used to craft 7 ingots [DONE], while broken gives only 6
+--     - Normal anvil can be used to craft 7 ingots, while broken gives only 6 [DONE]
 
 
 anvil = {
@@ -403,6 +403,9 @@ minetest.register_node("anvil:anvil", {
 		-- damage the hammer slightly
 		wielded:add_wear( 100 )
 		puncher:set_wielded_item( wielded )
+
+		-- TODO damage the anvil as well
+		-- TODO drop inventories and replace the anvil with a broken one when damage is complete
 	end,
 	is_ground_content = false,
 })
@@ -417,6 +420,36 @@ minetest.register_lbm({
 		if #minetest.get_objects_inside_radius(test_pos, 0.5) > 0 then return end
 		update_item(pos, node)
 	end
+})
+
+-- TODO: DRY
+minetest.register_node("anvil:broken_anvil", {
+	drawtype = "nodebox",
+	description = S("Broken Anvil"),
+	_doc_items_longdesc = S("A broken anvil."),
+	tiles = {"default_stone.png^[crack:1:2"},
+	paramtype  = "light",
+	paramtype2 = "facedir",
+	groups = {cracky=2},
+	-- the nodebox model comes from realtest
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5,-0.5,-0.3,0.5,-0.4,0.3},
+			{-0.35,-0.4,-0.25,0.35,-0.3,0.25},
+			{-0.3,-0.3,-0.15,0.3,-0.1,0.15},
+			{-0.35,-0.1,-0.2,0.35,0.1,0.2},
+		},
+	},
+	selection_box = {
+		type = "fixed",
+		fixed = {
+			{-0.5,-0.5,-0.3,0.5,-0.4,0.3},
+			{-0.35,-0.4,-0.25,0.35,-0.3,0.25},
+			{-0.3,-0.3,-0.15,0.3,-0.1,0.15},
+			{-0.35,-0.1,-0.2,0.35,0.1,0.2},
+		}
+	}
 })
 
 -- Transfer the hammer from the old hammer storage slot to the main slot, or else drop it in world
@@ -458,6 +491,11 @@ minetest.register_on_mods_loaded(function()
 					output= "elepower_dynamics:iron_ingot 7",
 					recipe = {'anvil:anvil'}
 			})
+			minetest.register_craft({
+					type="shapeless",
+					output= "elepower_dynamics:iron_ingot 6",
+					recipe = {'anvil:broken_anvil'}
+			})
 		else
 			minetest.register_craft({
 					output = "anvil:anvil",
@@ -471,6 +509,11 @@ minetest.register_on_mods_loaded(function()
 					type="shapeless",
 					output= "default:steel_ingot 7",
 					recipe = {'anvil:anvil'}
+			})
+			minetest.register_craft({
+					type="shapeless",
+					output= "default:steel_ingot 6",
+					recipe = {'anvil:broken_anvil'}
 			})
 		end
 end)
