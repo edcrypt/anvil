@@ -12,6 +12,7 @@
 --   - Pick up anvil with Shift+Left Click
 --   - Open the UI to load the anvil with the materials you commonly use to fix your tools
 --   - When the player looks at the anvil, a message with how loaded it is appears
+--   - Anvils have no owners, but tools placed on top of it can only be taken by the player who placed it
 -- Metal Nuggets and Crystal fragments
 --   - Can be used as material to fix tools
 --   - 1 ingot = 9 nuggets [new]
@@ -42,6 +43,10 @@ anvil = {
 	}
 }
 
+---------------------------------------------------------------------------------------
+-- unrepairables
+---------------------------------------------------------------------------------------
+
 anvil.make_unrepairable = function(item_name)
 	local item_def = minetest.registered_items[item_name]
 	if item_def then
@@ -54,7 +59,9 @@ anvil.make_unrepairable("technic:lava_can")
 
 local S = minetest.get_translator(minetest.get_current_modname())
 
--- the hammer for the anvil
+---------------------------------------------------------------------------------------
+-- blacksmith hammers
+---------------------------------------------------------------------------------------
 
 local hammer_def = {
 	description = S("Steel blacksmithing hammer"),
@@ -76,8 +83,7 @@ local hammer_def = {
 
 minetest.register_tool("anvil:hammer", hammer_def)
 
--- Fix Mese Diamond hammer wielding
-
+-- Fix GOCM's mese diamond hammer wielding
 local gocm_hammer_def = minetest.registered_items['gocm_carbon:epic_mese_diamond_hammer']
 minetest.register_tool(":gocm_carbon:epic_mese_diamond_hammer", {
 	description = S("Mese Diamond hammer"),
@@ -96,6 +102,11 @@ minetest.register_tool(":gocm_carbon:epic_mese_diamond_hammer", {
 		damage_groups = {fleshy=6},
 	}
 })
+
+
+---------------------------------------------------------------------------------------
+-- anvils
+---------------------------------------------------------------------------------------
 
 local tmp = {}
 
