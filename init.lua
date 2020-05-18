@@ -236,13 +236,18 @@ minetest.register_node("anvil:anvil", {
 
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		local meta = minetest.get_meta(pos)
+
+		-- feeding materials
 		if listname=="materials" and meta:get_inventory():room_for_item("materials", stack) then
 			-- TODO allow nugets/shards only
 			return stack:get_count()
 		end
+
 		if listname~="input" then
 			return 0
 		end
+
+		-- placing the workpiece
 		if (listname=='input') then
 			if (stack:get_wear() == 0) then
 				-- TODO allow placing metal tools for work-hardening
@@ -301,8 +306,12 @@ minetest.register_node("anvil:anvil", {
 			update_item(pos,node)
 		end
 
+		-- TODO:
+		--  - mese diamond hammer can fix mythril, diamond, mese, mese diamond
+		--  - steel hammer fixes everything else
+
 		-- only punching with the hammer is supposed to work
-		if wielded:get_name() ~= 'anvil:hammer' then
+		if not ((wielded:get_name() == 'anvil:hammer') or (wielded:get_name() == 'gocm_carbon:epic_mese_diamond_hammer')) then
 			return
 		end
 		local input = inv:get_stack('input',1)
@@ -314,6 +323,8 @@ minetest.register_node("anvil:anvil", {
 			or input:get_name() == "technic:lava_can" ) then
 			return
 		end
+
+		-- TODO check if there is matching material
 
 		-- 65535 is max damage
 		local damage_state = 40-math.floor(input:get_wear()/1638)
@@ -386,6 +397,8 @@ minetest.register_node("anvil:anvil", {
 		-- do the actual repair
 		input:add_wear( -5000 ) -- equals to what technic toolshop does in 5 seconds
 		inv:set_stack("input", 1, input)
+
+		-- TODO consume material
 
 		-- damage the hammer slightly
 		wielded:add_wear( 100 )
