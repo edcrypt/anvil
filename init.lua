@@ -60,7 +60,7 @@ local hammer_def = {
 	description = S("Steel blacksmithing hammer"),
 	_doc_items_longdesc = S("A tool for repairing other tools with a blacksmith's anvil."),
 	_doc_items_usagehelp = S("Use this hammer to strike an anvil bearing a damaged tool and you can repair it."),
-	wield_image     = "anvil_tool_steelhammer.png^[transformR270",
+	wield_image = "anvil_tool_steelhammer.png^[transformR270",
 	inventory_image = "anvil_tool_steelhammer.png",
 
 	tool_capabilities = {
@@ -81,7 +81,7 @@ minetest.register_tool("anvil:hammer", hammer_def)
 local gocm_hammer_def = minetest.registered_items['gocm_carbon:epic_mese_diamond_hammer']
 minetest.register_tool(":gocm_carbon:epic_mese_diamond_hammer", {
 	description = S("Mese Diamond hammer"),
-	_doc_items_longdesc = S("A tool for repairing other tools with a blacksmith's anvil."),
+	_doc_items_longdesc = S("Repair tougher tools with a blacksmith's anvil."),
 	_doc_items_usagehelp = S("Use this hammer to strike an anvil bearing a damaged tool and you can repair it."),
 	wield_image = gocm_hammer_def.inventory_image .. '^[transformR270',
 	inventory_image = gocm_hammer_def.inventory_image,
@@ -182,7 +182,10 @@ minetest.register_node("anvil:anvil", {
 	drawtype = "nodebox",
 	description = S("Anvil"),
 	_doc_items_longdesc = S("A tool for repairing other tools in conjunction with a blacksmith's hammer."),
-	_doc_items_usagehelp = S("Click with a damaged tool to place it tool upon. You can then repair the tool by striking it with a blacksmith's hammer. Repeated blows may be necessary to fully repair a badly worn tool. To retrieve the tool, punch  anvil with an empty hand."),
+	_doc_items_usagehelp = S("Click with a damaged tool to place it upon. "..
+									 "You can then repair the tool by striking it with a blacksmith's hammer. "..
+									 "Repeated blows may be necessary to fully repair a badly worn tool. "..
+									 "To retrieve the tool, punch  anvil with an empty hand."),
 	tiles = {"default_stone.png"},
 	paramtype  = "light",
 	paramtype2 = "facedir",
